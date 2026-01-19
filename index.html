@@ -81,11 +81,7 @@
                                 <label><input type="radio" name="type" value="Income"> Income</label>
                             </div>
                             <input type="number" id="amount" placeholder="Amount" step="0.01" required>
-                            <!-- Allows INR Entry (Backend auto-converts to EUR total) -->
-                            <select id="currency">
-                                <option value="EUR">EUR (€)</option>
-                                <option value="INR">INR (₹)</option>
-                            </select>
+                            <!-- Currency selection removed. Defaulting to EUR. -->
                             <select id="category">
                                 <!-- Options populated by JS -->
                             </select>
@@ -136,5 +132,6 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
