@@ -1,95 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Dashboard â€“ Ocean Theme</title>
+    <title>Professional Finance Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-    <div class="app-container">
-        <!-- SIDEBAR / NAVIGATION (Visual only for now) -->
+    <div class="app-layout">
+        <!-- SIDEBAR -->
         <nav class="sidebar">
-            <div class="logo">
-                <div class="logo-icon"></div>
-                <span>FinOcean</span>
+            <div class="brand">
+                <div class="brand-logo"></div>
+                <span>FinPro</span>
             </div>
-            <div class="nav-item active">Dashboard</div>
-            <div class="nav-item">Transactions</div>
-            <div class="nav-item">Analytics</div>
+            <div class="nav-menu">
+                <div class="nav-item active">
+                    <span class="icon">📊</span> Dashboard
+                </div>
+                <div class="nav-item">
+                    <span class="icon">💳</span> Transactions
+                </div>
+                <div class="nav-item">
+                    <span class="icon">📂</span> Categories
+                </div>
+                <div class="nav-item">
+                    <span class="icon">📅</span> Summary
+                </div>
+            </div>
+            <div class="nav-footer">
+                <div class="nav-item">
+                    <span class="icon">⚙️</span> Settings
+                </div>
+            </div>
         </nav>
         <!-- MAIN CONTENT -->
         <main class="main-content">
-            <header>
-                <div class="header-text">
-                    <h1>Overview</h1>
-                    <p class="subtitle" id="currentDate">Loading date...</p>
+            <!-- HEADER -->
+            <header class="top-bar">
+                <div class="page-title">
+                    <h1>Dashboard</h1>
+                    <p id="currentDate">Loading date...</p>
                 </div>
-                <div class="header-time" id="currentTime">--:--</div>
+                <div class="status-panel">
+                    <div class="clock" id="currentTime">--:--</div>
+                </div>
             </header>
             <!-- DASHBOARD GRID -->
             <div class="dashboard-grid">
-                <!-- ROW 1: METRICS -->
-                <div class="card balance-card">
-                    <div class="card-label">Total Balance</div>
-                    <div class="balance-amount" id="balanceDisplay">$0.00</div>
-                    <div class="balance-badge">
-                        <span class="trend-icon">â†‘</span>
-                        <span>Vs last month</span>
+                <!-- TOP ROW: SUMMARY CARDS -->
+                <div class="card summary-card balance-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-data">
+                        <span class="label">Total Balance</span>
+                        <span class="value" id="balanceDisplay">$0.00</span>
                     </div>
+                    <div class="trend up">↑ 2.4% vs last month</div>
                 </div>
-                <div class="card stat-card">
-                    <div class="icon-box income-icon">â†“</div>
-                    <div class="stat-info">
+                <div class="card summary-card">
+                    <div class="card-icon income-icon">⬇</div>
+                    <div class="card-data">
                         <span class="label">Total Income</span>
-                        <span class="value income-text" id="incomeCount">0</span>
+                        <span class="value" id="incomeCount">0</span>
                     </div>
                 </div>
-                <div class="card stat-card">
-                    <div class="icon-box expense-icon">â†‘</div>
-                    <div class="stat-info">
+                <div class="card summary-card">
+                    <div class="card-icon expense-icon">⬆</div>
+                    <div class="card-data">
                         <span class="label">Total Expenses</span>
-                        <span class="value expense-text" id="expenseCount">0</span>
+                        <span class="value" id="expenseCount">0</span>
                     </div>
                 </div>
-                <!-- ROW 2: CHART & FORM -->
-                <!-- ANALYTICS CHART -->
-                <div class="card chart-card">
-                    <h3>Expenses by Category</h3>
-                    <div class="chart-container">
-                        <div class="donut-chart" id="expenseChart">
-                            <div class="center-hole"></div>
-                        </div>
-                        <div class="chart-legend" id="chartLegend">
-                            <!-- JS populates this -->
-                            <div class="legend-item"><span class="dot"></span> No Data</div>
-                        </div>
+                <!-- MIDDLE ROW: MAIN PANEL & ANALYTICS -->
+                <!-- Main "Thinking Space" Panel -->
+                <div class="card main-panel">
+                    <div class="panel-header">
+                        <h2>Quick Action</h2>
                     </div>
-                </div>
-                <!-- ADD TRANSACTION FORM -->
-                <div class="card form-card">
-                    <h3>Quick Transaction</h3>
-                    <form id="transactionForm">
-                        <div class="form-group">
-                            <div class="toggle-switch">
-                                <input type="radio" id="typeExpense" name="type" value="Expense" checked>
-                                <label for="typeExpense">Expense</label>
-                                <input type="radio" id="typeIncome" name="type" value="Income">
-                                <label for="typeIncome">Income</label>
+                    <form id="transactionForm" class="quick-form">
+                        <div class="form-grid">
+                            <div class="toggle-group">
+                                <label><input type="radio" name="type" value="Expense" checked> Expense</label>
+                                <label><input type="radio" name="type" value="Income"> Income</label>
                             </div>
-                        </div>
-                        <div class="input-group">
-                            <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+                            <input type="number" id="amount" placeholder="Amount" step="0.01" required>
                             <select id="currency">
-                                <option value="USD">USD ($)</option>
-                                <option value="EUR">EUR (â‚¬)</option>
-                                <option value="INR">INR (â‚¹)</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="INR">INR</option>
                             </select>
-                        </div>
-                        <div class="input-row">
                             <select id="category">
                                 <option value="Food">Food</option>
                                 <option value="Rent">Rent</option>
@@ -99,34 +99,42 @@
                                 <option value="Health">Health</option>
                                 <option value="Entertainment">Entertainment</option>
                                 <option value="Salary">Salary</option>
-                                <option value="Savings">Savings</option>
-                                <option value="Other">Other</option>
                             </select>
                             <input type="text" id="paymentMethod" placeholder="Method (e.g. Card)">
+                            <input type="text" id="notes" placeholder="Notes" class="full-width">
+                            <button type="submit" id="submitBtn" class="full-width">Add Transaction</button>
                         </div>
-                        <input type="text" id="notes" placeholder="Add a note..." class="full-width">
-                        <button type="submit" id="submitBtn">Add Record</button>
-                        <p id="formStatus"></p>
+                        <p id="formStatus" class="status-text"></p>
                     </form>
                 </div>
-                <!-- ROW 3: TRANSACTIONS -->
-                <div class="card transactions-card full-width">
-                    <div class="card-header">
-                        <h3>Recent Transactions</h3>
+                <!-- Analytics Chart ("Ocean Window") -->
+                <div class="card analytics-panel">
+                    <h3>Expense Breakdown</h3>
+                    <div class="chart-wrapper">
+                        <div class="donut-chart" id="expenseChart">
+                            <div class="chart-center"></div>
+                        </div>
+                        <div class="chart-legend" id="chartLegend">
+                            <!-- JS populated -->
+                        </div>
                     </div>
-                    <div class="table-responsive">
+                </div>
+                <!-- BOTTOM ROW: TRANSACTIONS -->
+                <div class="card transactions-panel full-width">
+                    <h3>Recent Transactions</h3>
+                    <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Date</th>
                                     <th>Category</th>
                                     <th>Method</th>
-                                    <th>Amount</th>
+                                    <th class="text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody id="transactionsList">
                                 <tr>
-                                    <td colspan="4" class="empty">Loading...</td>
+                                    <td colspan="4">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -137,5 +145,5 @@
     </div>
     <script src="script.js"></script>
 </body>
-
 </html>
+
