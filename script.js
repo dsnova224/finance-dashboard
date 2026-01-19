@@ -169,7 +169,15 @@ form.addEventListener('submit', async (e) => {
         const response = await fetch(API_URL, {
             method: "POST", body: JSON.stringify(formData)
         });
-        const result = await response.json();
+        // Read text first to debug non-JSON responses (like HTML errors)
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error("Server raw response:", text);
+            throw new Error("Server Error. Check console for details.");
+        }
         if (result.status === "success") {
             formStatus.textContent = "Transaction Added";
             formStatus.style.color = "var(--success)";
@@ -181,12 +189,15 @@ form.addEventListener('submit', async (e) => {
             throw new Error(result.message);
         }
     } catch (error) {
-        formStatus.textContent = "Connection Error";
+        console.error("Submission Error:", error);
+        formStatus.textContent = "Error: " + error.message;
         formStatus.style.color = "var(--danger)";
     } finally {
         submitBtn.textContent = "Add Transaction";
         submitBtn.disabled = false;
-        setTimeout(() => { formStatus.textContent = ""; }, 3000);
+        setTimeout(() => {
+            if (formStatus.textContent.includes("Transaction Added")) formStatus.textContent = "";
+        }, 3000);
     }
 });
 // UTILS
