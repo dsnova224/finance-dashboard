@@ -14,16 +14,32 @@ const chartEl = document.getElementById('expenseChart');
 const legendEl = document.getElementById('chartLegend');
 // Category Colors (Professional Palette)
 const CATEGORY_COLORS = {
+    // Expense
     'Food': '#38bdf8',       // Sky Blue
     'Rent': '#818cf8',       // Indigo
     'Transport': '#2dd4bf',  // Teal
-    'Shopping': '#f472b6',   // Pink
     'Utilities': '#fbbf24',  // Amber
+    'Shopping': '#f472b6',   // Pink
     'Health': '#34d399',     // Emerald
     'Entertainment': '#a78bfa', // Purple
+    'Education': '#60a5fa',  // Blue
+    'Savings': '#22c55e',    // Green
+    'Other Expense': '#94a3b8', // Slate
+    // Income
     'Salary': '#22c55e',     // Green
-    'Other': '#94a3b8'       // Slate
+    'Freelance': '#fbbf24',  // Amber
+    'Business': '#818cf8',   // Indigo
+    'Investments': '#34d399',// Emerald
+    'Gifts / Bonus': '#f472b6', // Pink
+    'Refunds': '#38bdf8',    // Sky Blue
+    'Other Income': '#94a3b8' // Slate
 };
+const INCOME_CATEGORIES = [
+    "Salary", "Freelance", "Business", "Investments", "Gifts / Bonus", "Refunds", "Other Income"
+];
+const EXPENSE_CATEGORIES = [
+    "Food", "Rent", "Transport", "Utilities", "Shopping", "Health", "Entertainment", "Education", "Savings", "Other Expense"
+];
 // Fallback Mock Data
 const MOCK_DATA = {
     balance: 5430.50,
@@ -40,8 +56,28 @@ const MOCK_DATA = {
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000); // Live clock
+    // Setup Category Switcher
+    const typeInputs = document.querySelectorAll('input[name="type"]');
+    typeInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            updateCategoryOptions(e.target.value);
+        });
+    });
+    // Default to Expense
+    updateCategoryOptions('Expense');
     fetchData(); // Load data
 });
+function updateCategoryOptions(type) {
+    const categorySelect = document.getElementById('category');
+    categorySelect.innerHTML = ''; // Clear existing
+    const categories = type === 'Income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+    });
+}
 function updateDateTime() {
     const now = new Date();
     document.getElementById('currentTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -182,8 +218,9 @@ form.addEventListener('submit', async (e) => {
             formStatus.textContent = "Transaction Added";
             formStatus.style.color = "var(--success)";
             form.reset();
-            // Reset to Expense checked
+            // Reset to Expense checked and update options
             document.querySelector('input[value="Expense"]').checked = true;
+            updateCategoryOptions('Expense');
             fetchData();
         } else {
             throw new Error(result.message);
@@ -204,4 +241,5 @@ form.addEventListener('submit', async (e) => {
 function formatCurrency(amount, currency = 'USD') {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount);
 }
+
 
