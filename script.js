@@ -203,3 +203,4 @@ function formatMoneySimple(amount, symbol) {
 
 
 
+
