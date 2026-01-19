@@ -1,5 +1,6 @@
 // CONFIGURATION
-const API_URL = "https://script.google.com/macros/s/AKfycbzgLB4yl-tIFRLyX0MA0WGYVxfNV84IPDgvhLIvK3NX6mxaVlX8ljclYYl9ZXqYMrK1/exec";
+// PASTE YOUR NEW WEB APP URL HERE
+const API_URL = "https://script.google.com/macros/s/AKfycbxIMDToHTMSJhbNuE3XriArTC-GRMTpK0GDHecgM1jMkawzO9df3TvIxdqpzsxPqWgV/exec";
 const API_TOKEN = "omom@123OM";
 // DOM Elements
 const balanceDisplay = document.getElementById('balanceDisplay');
@@ -15,8 +16,8 @@ const currencySelect = document.getElementById('currency');
 const rateInputGroup = document.getElementById('rateInputGroup');
 const exchangeRateInput = document.getElementById('exchangeRate');
 // State
-let globalLiveRate = 105.86; // Default from user prompt
-let currentData = null;
+let globalLiveRate = 105.86; // Fallback
+let currentView = 'INR';      // Default
 // Category Colors
 const CATEGORY_COLORS = {
     'Food': '#38bdf8', 'Rent': '#818cf8', 'Transport': '#2dd4bf',
@@ -29,48 +30,34 @@ const CATEGORY_COLORS = {
 };
 const INCOME_CATEGORIES = ["Salary", "Freelance", "Business", "Investments", "Gifts / Bonus", "Refunds", "Other Income"];
 const EXPENSE_CATEGORIES = ["Food", "Rent", "Transport", "Utilities", "Shopping", "Health", "Entertainment", "Education", "Savings", "Other Expense"];
-// Fallback Mock Data (User Scenario)
-const MOCK_DATA = {
-    // 2000 EUR * 105.86 = 211,720 INR
-    // 200 INR * 1.0 = 200 INR
-    // Balance = 211,520 INR
-    balance: 211520,
-    incomeCount: 1,
-    expenseCount: 1,
-    currentRate: 105.86,
-    transactions: [
-        { date: "2023-11-15", type: "Income", category: "Salary", amount: 2000, currency: "EUR", paymentMethod: "Bank", exchangeRate: 105.86 },
-        { date: "2023-11-16", type: "Expense", category: "Food", amount: 200, currency: "INR", paymentMethod: "Cash", exchangeRate: 1.0 }
-    ]
-};
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000);
-    // Category Switcher
+    // Category Logic
     const typeInputs = document.querySelectorAll('input[name="type"]');
     typeInputs.forEach(input => {
         input.addEventListener('change', (e) => updateCategoryOptions(e.target.value));
     });
     updateCategoryOptions('Expense');
-    // Currency Dropdown Switcher (Form)
+    // Form Currency Logic
     currencySelect.addEventListener('change', (e) => {
         if (e.target.value === 'EUR') {
             rateInputGroup.style.display = 'block';
-            exchangeRateInput.value = globalLiveRate; // Auto-fill
+            exchangeRateInput.value = globalLiveRate;
         } else {
             rateInputGroup.style.display = 'none';
         }
     });
-    // View Toggle Switcher (Header)
+    // HEADER VIEW TOGGLE -> FETCH NEW DATA
     const viewInputs = document.querySelectorAll('input[name="viewCurrency"]');
     viewInputs.forEach(input => {
-        input.addEventListener('change', () => {
-            // Re-render with current global data
-            if (currentData) renderData(currentData);
+        input.addEventListener('change', (e) => {
+            currentView = e.target.value;
+            fetchData(); // REQUEST SERVER TO CONVERT
         });
     });
-    fetchData();
+    fetchData(); // Initial Load (INR)
 });
 function updateCategoryOptions(type) {
     const categorySelect = document.getElementById('category');
@@ -87,31 +74,27 @@ function updateDateTime() {
     document.getElementById('currentTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     document.getElementById('currentDate').textContent = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
-// FETCH DATA
+// MAIN DATA FUNCTION
 async function fetchData() {
-    if (API_URL === "YOUR_GAS_WEB_APP_URL") {
-        console.log("Using Mock Data");
-        currentData = MOCK_DATA;
-        renderData(currentData);
-        return;
-    }
+    // Determine what currency we want to see
+    const target = document.querySelector('input[name="viewCurrency"]:checked').value;
+    submitBtn.textContent = "Loading...";
     try {
-        submitBtn.textContent = "Syncing...";
         const response = await fetch(API_URL, {
             method: "POST",
-            body: JSON.stringify({ action: "getData", token: API_TOKEN })
+            body: JSON.stringify({
+                action: "getData",
+                token: API_TOKEN,
+                targetCurrency: target // TELL SERVER WHAT WE WANT
+            })
         });
-        // Parse safely
         const text = await response.text();
         let result = JSON.parse(text);
         if (result.status === "success") {
-            currentData = result.data; // Store globally
-            // Update Live Rate from Server
-            if (result.data.currentRate) {
-                globalLiveRate = parseFloat(result.data.currentRate);
-                console.log("Updated Live Rate:", globalLiveRate);
-            }
-            renderData(currentData);
+            const data = result.data;
+            // Update global rate if provided
+            if (data.liveRate) globalLiveRate = parseFloat(data.liveRate);
+            renderDashboard(data);
         } else {
             console.error(result.message);
         }
@@ -121,73 +104,51 @@ async function fetchData() {
         submitBtn.textContent = "Add Transaction";
     }
 }
-// RENDER FUNCTION (Handles Conversions)
-function renderData(data) {
-    if (!data) return;
-    // 1. Determine Target Currency
-    const viewCurrency = document.querySelector('input[name="viewCurrency"]:checked').value;
-    const isViewINR = viewCurrency === 'INR';
-    // 2. Calculate Display Values
-    // Backend returns 'balance' in INR (Base). 
-    let displayBalance = data.balance;
-    let currencySymbol = '₹';
-    if (!isViewINR) {
-        // Convert TO EUR
-        // User Logic: 211524 (INR Balance) / 105.86 (Current Rate) = 1998.11 EUR
-        // Note: globalLiveRate MUST be non-zero
-        const rate = (globalLiveRate > 0) ? globalLiveRate : 1.0;
-        displayBalance = data.balance / rate;
-        currencySymbol = '€';
-    }
-    balanceDisplay.textContent = formatMoney(displayBalance, currencySymbol);
+function renderDashboard(data) {
+    // Currency Symbol
+    const sym = data.viewCurrency === 'EUR' ? '€' : '₹';
+    // 1. Balance & Counts
+    balanceDisplay.textContent = formatMoney(data.balance, sym);
     incomeCountEl.textContent = data.incomeCount;
     expenseCountEl.textContent = data.expenseCount;
-    // 3. Transactions Table
+    // 2. Transactions Table
     transactionsList.innerHTML = '';
     let categoryTotals = {};
     let totalExpenseForChart = 0;
+    if (data.transactions.length === 0) {
+        transactionsList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#aaa;">No transactions found</td></tr>';
+    }
     data.transactions.forEach(tx => {
         const tr = document.createElement('tr');
-        let dateStr = "";
-        try { dateStr = new Date(tx.date).toLocaleDateString([], { month: 'short', day: 'numeric' }); } catch (e) { }
+        let dateStr = tx.date.split('T')[0]; // Simple date handle
         const isIncome = tx.type === 'Income';
         const colorClass = isIncome ? 'var(--success)' : 'var(--text-white)';
         const sign = isIncome ? '+' : '-';
         const catColor = CATEGORY_COLORS[tx.category] || '#94a3b8';
-        let displayAmount = parseFloat(tx.amount);
-        let rowSymbol = (tx.currency === 'USD') ? '$' : (tx.currency === 'EUR' ? '€' : '₹');
+        // NOTE: tx.amount IS ALREADY CONVERTED BY SERVER
         tr.innerHTML = `
             <td>${dateStr}</td>
             <td style="color:${catColor}">● ${tx.category}</td>
-            <td style="color:var(--text-muted); font-size:0.85rem;">${tx.exchangeRate ? '@' + tx.exchangeRate : '-'}</td>
-            <td style="text-align:right; color:${colorClass}; font-weight:600;">${sign}${formatMoney(displayAmount, rowSymbol)}</td>
+            <td style="color:var(--text-muted); font-size:0.85rem;">
+                ${tx.targetCurrency}
+            </td>
+            <td style="text-align:right; color:${colorClass}; font-weight:600;">
+                ${sign}${formatMoney(tx.amount, sym)}
+            </td>
         `;
         transactionsList.appendChild(tr);
-        // Chart Logic: Normalize to currently viewed currency
-        // Backend Data is generic. We need INR Value first.
-        let amountInINR = parseFloat(tx.amount);
-        if (tx.currency === 'EUR') {
-            // INR Value = EUR Amount * Stored Rate
-            amountInINR = amountInINR * (tx.exchangeRate || globalLiveRate);
-        }
-        // If View is EUR, convert that INR total to EUR using LIVE rate
-        let chartVal = amountInINR;
-        if (!isViewINR) {
-            chartVal = chartVal / ((globalLiveRate > 0) ? globalLiveRate : 1.0);
-        }
+        // Chart Data
         if (!isIncome) {
             const cat = tx.category || 'Other';
-            categoryTotals[cat] = (categoryTotals[cat] || 0) + chartVal;
-            totalExpenseForChart += chartVal;
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + tx.amount;
+            totalExpenseForChart += tx.amount;
         }
     });
     renderChart(categoryTotals, totalExpenseForChart);
 }
-// VANILLA JS DONUT CHART
 function renderChart(totals, totalAmount) {
     if (totalAmount === 0 || isNaN(totalAmount)) {
         chartEl.style.background = '#1e293b';
-        legendEl.innerHTML = '<div class="legend-item">No expenses yet</div>';
         return;
     }
     let gradientString = [];
@@ -213,12 +174,10 @@ function renderChart(totals, totalAmount) {
     });
     chartEl.style.background = `conic-gradient(${gradientString.join(', ')})`;
 }
-// FORM SUBMISSION
+// FORM SUBMIT
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (API_URL === "YOUR_GAS_WEB_APP_URL") {
-        alert("Enter Real API URL."); return;
-    }
+    if (API_URL.includes("YOUR")) { alert("Update API URL!"); return; }
     const type = document.querySelector('input[name="type"]:checked').value;
     const curr = document.getElementById('currency').value;
     // Logic: If EUR, we use the input rate. If INR, we use 1.0.
@@ -243,30 +202,21 @@ form.addEventListener('submit', async (e) => {
         const response = await fetch(API_URL, {
             method: "POST", body: JSON.stringify(formData)
         });
-        const text = await response.text();
-        let result = JSON.parse(text);
+        const result = await response.json();
         if (result.status === "success") {
-            formStatus.textContent = "Transaction Added";
+            formStatus.textContent = "Saved!";
             formStatus.style.color = "var(--success)";
             form.reset();
-            // Reset state
-            document.querySelector('input[value="Expense"]').checked = true;
-            updateCategoryOptions('Expense');
-            rateInputGroup.style.display = 'none'; // Hide rate input
+            // Refetch current view
             fetchData();
         } else {
             throw new Error(result.message);
         }
     } catch (error) {
-        console.error("Submit Error:", error);
-        formStatus.textContent = "Error: " + error.message;
-        formStatus.style.color = "var(--danger)";
+        formStatus.textContent = "Error";
     } finally {
         submitBtn.textContent = "Add Transaction";
         submitBtn.disabled = false;
-        setTimeout(() => {
-            if (formStatus.textContent.includes("Transaction Added")) formStatus.textContent = "";
-        }, 3000);
     }
 });
 function formatMoney(amount, symbol) {
