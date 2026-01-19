@@ -1,6 +1,6 @@
 // CONFIGURATION
 // PASTE YOUR NEW WEB APP URL HERE
-const API_URL = "https://script.google.com/macros/s/AKfycbxIMDToHTMSJhbNuE3XriArTC-GRMTpK0GDHecgM1jMkawzO9df3TvIxdqpzsxPqWgV/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzgLB4yl-tIFRLyX0MA0WGYVxfNV84IPDgvhLIvK3NX6mxaVlX8ljclYYl9ZXqYMrK1/exec";
 const API_TOKEN = "omom@123OM";
 // DOM Elements
 const balanceDisplay = document.getElementById('balanceDisplay');
@@ -15,9 +15,10 @@ const legendEl = document.getElementById('chartLegend');
 const currencySelect = document.getElementById('currency');
 const rateInputGroup = document.getElementById('rateInputGroup');
 const exchangeRateInput = document.getElementById('exchangeRate');
+const rateLabel = document.getElementById('rateLabel');
 // State
-let globalLiveRate = 105.86; // Fallback
-let currentView = 'INR';      // Default
+let rates = { EUR_INR: 105.86, INR_EUR: 0.0094 }; // Defaults
+let currentView = 'INR';
 // Category Colors
 const CATEGORY_COLORS = {
     'Food': '#38bdf8', 'Rent': '#818cf8', 'Transport': '#2dd4bf',
@@ -40,25 +41,32 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('change', (e) => updateCategoryOptions(e.target.value));
     });
     updateCategoryOptions('Expense');
-    // Form Currency Logic
-    currencySelect.addEventListener('change', (e) => {
-        if (e.target.value === 'EUR') {
-            rateInputGroup.style.display = 'block';
-            exchangeRateInput.value = globalLiveRate;
-        } else {
-            rateInputGroup.style.display = 'none';
-        }
-    });
-    // HEADER VIEW TOGGLE -> FETCH NEW DATA
+    // FORM CURRENCY LOGIC (Update Rate Input)
+    currencySelect.addEventListener('change', updateRateInputContext);
+    // View View Toggle
     const viewInputs = document.querySelectorAll('input[name="viewCurrency"]');
     viewInputs.forEach(input => {
         input.addEventListener('change', (e) => {
             currentView = e.target.value;
-            fetchData(); // REQUEST SERVER TO CONVERT
+            fetchData();
         });
     });
-    fetchData(); // Initial Load (INR)
+    fetchData();
 });
+function updateRateInputContext() {
+    const selectedCurr = currencySelect.value;
+    // Always show rate input so user sees the valid conversion
+    rateInputGroup.style.display = 'block';
+    if (selectedCurr === 'EUR') {
+        // 1 EUR = ? INR
+        rateLabel.textContent = `Exchange Rate (1 EUR = ? INR)`;
+        exchangeRateInput.value = rates.EUR_INR;
+    } else {
+        // 1 INR = ? EUR
+        rateLabel.textContent = `Exchange Rate (1 INR = ? EUR)`;
+        exchangeRateInput.value = rates.INR_EUR;
+    }
+}
 function updateCategoryOptions(type) {
     const categorySelect = document.getElementById('category');
     categorySelect.innerHTML = '';
@@ -74,9 +82,7 @@ function updateDateTime() {
     document.getElementById('currentTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     document.getElementById('currentDate').textContent = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
-// MAIN DATA FUNCTION
 async function fetchData() {
-    // Determine what currency we want to see
     const target = document.querySelector('input[name="viewCurrency"]:checked').value;
     submitBtn.textContent = "Loading...";
     try {
@@ -85,15 +91,18 @@ async function fetchData() {
             body: JSON.stringify({
                 action: "getData",
                 token: API_TOKEN,
-                targetCurrency: target // TELL SERVER WHAT WE WANT
+                targetCurrency: target
             })
         });
         const text = await response.text();
         let result = JSON.parse(text);
         if (result.status === "success") {
             const data = result.data;
-            // Update global rate if provided
-            if (data.liveRate) globalLiveRate = parseFloat(data.liveRate);
+            // Update Rates
+            if (data.rates) {
+                rates = data.rates;
+                updateRateInputContext(); // Refresh form with new rates
+            }
             renderDashboard(data);
         } else {
             console.error(result.message);
@@ -105,45 +114,42 @@ async function fetchData() {
     }
 }
 function renderDashboard(data) {
-    // Currency Symbol
     const sym = data.viewCurrency === 'EUR' ? '€' : '₹';
-    // 1. Balance & Counts
     balanceDisplay.textContent = formatMoney(data.balance, sym);
     incomeCountEl.textContent = data.incomeCount;
     expenseCountEl.textContent = data.expenseCount;
-    // 2. Transactions Table
     transactionsList.innerHTML = '';
     let categoryTotals = {};
     let totalExpenseForChart = 0;
-    if (data.transactions.length === 0) {
+    if (!data.transactions || data.transactions.length === 0) {
         transactionsList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#aaa;">No transactions found</td></tr>';
+    } else {
+        data.transactions.forEach(tx => {
+            const tr = document.createElement('tr');
+            let dateStr = "";
+            try { dateStr = new Date(tx.date).toLocaleDateString([], { month: 'short', day: 'numeric' }); } catch (e) { }
+            const isIncome = tx.type === 'Income';
+            const colorClass = isIncome ? 'var(--success)' : 'var(--text-white)';
+            const sign = isIncome ? '+' : '-';
+            const catColor = CATEGORY_COLORS[tx.category] || '#94a3b8';
+            tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td style="color:${catColor}">● ${tx.category}</td>
+                <td style="color:var(--text-muted); font-size:0.85rem;">
+                   ${tx.displayCurrency}
+                </td>
+                <td style="text-align:right; color:${colorClass}; font-weight:600;">
+                    ${sign}${formatMoney(tx.amount, sym)}
+                </td>
+            `;
+            transactionsList.appendChild(tr);
+            if (!isIncome) {
+                const cat = tx.category || 'Other';
+                categoryTotals[cat] = (categoryTotals[cat] || 0) + tx.amount;
+                totalExpenseForChart += tx.amount;
+            }
+        });
     }
-    data.transactions.forEach(tx => {
-        const tr = document.createElement('tr');
-        let dateStr = tx.date.split('T')[0]; // Simple date handle
-        const isIncome = tx.type === 'Income';
-        const colorClass = isIncome ? 'var(--success)' : 'var(--text-white)';
-        const sign = isIncome ? '+' : '-';
-        const catColor = CATEGORY_COLORS[tx.category] || '#94a3b8';
-        // NOTE: tx.amount IS ALREADY CONVERTED BY SERVER
-        tr.innerHTML = `
-            <td>${dateStr}</td>
-            <td style="color:${catColor}">● ${tx.category}</td>
-            <td style="color:var(--text-muted); font-size:0.85rem;">
-                ${tx.targetCurrency}
-            </td>
-            <td style="text-align:right; color:${colorClass}; font-weight:600;">
-                ${sign}${formatMoney(tx.amount, sym)}
-            </td>
-        `;
-        transactionsList.appendChild(tr);
-        // Chart Data
-        if (!isIncome) {
-            const cat = tx.category || 'Other';
-            categoryTotals[cat] = (categoryTotals[cat] || 0) + tx.amount;
-            totalExpenseForChart += tx.amount;
-        }
-    });
     renderChart(categoryTotals, totalExpenseForChart);
 }
 function renderChart(totals, totalAmount) {
@@ -174,16 +180,16 @@ function renderChart(totals, totalAmount) {
     });
     chartEl.style.background = `conic-gradient(${gradientString.join(', ')})`;
 }
-// FORM SUBMIT
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (API_URL.includes("YOUR")) { alert("Update API URL!"); return; }
     const type = document.querySelector('input[name="type"]:checked').value;
     const curr = document.getElementById('currency').value;
-    // Logic: If EUR, we use the input rate. If INR, we use 1.0.
-    let rateToSend = 1.0;
-    if (curr === 'EUR') {
-        rateToSend = document.getElementById('exchangeRate').value || globalLiveRate;
+    // Always send the visible rate
+    let rateToSend = document.getElementById('exchangeRate').value;
+    // Fallback if empty
+    if (!rateToSend) {
+        rateToSend = (curr === 'EUR') ? rates.EUR_INR : rates.INR_EUR;
     }
     const formData = {
         action: "addTransaction",
@@ -194,7 +200,7 @@ form.addEventListener('submit', async (e) => {
         category: document.getElementById('category').value,
         paymentMethod: document.getElementById('paymentMethod').value,
         notes: document.getElementById('notes').value,
-        exchangeRate: rateToSend // Send the rate!
+        exchangeRate: rateToSend
     };
     try {
         submitBtn.textContent = "Processing...";
@@ -207,7 +213,6 @@ form.addEventListener('submit', async (e) => {
             formStatus.textContent = "Saved!";
             formStatus.style.color = "var(--success)";
             form.reset();
-            // Refetch current view
             fetchData();
         } else {
             throw new Error(result.message);
