@@ -9,83 +9,46 @@
 </head>
 <body>
     <div class="app-layout">
-        <!-- SIDEBAR -->
         <nav class="sidebar">
-            <div class="brand">
-                <div class="brand-logo"></div>
-                <span>FinPro</span>
-            </div>
+            <div class="brand"><div class="brand-logo"></div><span>FinPro</span></div>
             <div class="nav-menu">
-                <div class="nav-item active">
-                    <span class="icon">📊</span> Dashboard
-                </div>
-                <div class="nav-item">
-                    <span class="icon">💳</span> Transactions
-                </div>
-                <div class="nav-item">
-                    <span class="icon">📂</span> Categories
-                </div>
+                <div class="nav-item active"><span class="icon">📊</span> Dashboard</div>
+                <div class="nav-item"><span class="icon">💳</span> Transactions</div>
+                <div class="nav-item"><span class="icon">📂</span> Categories</div>
             </div>
-            <div class="nav-footer">
-                <div class="nav-item">
-                    <span class="icon">⚙️</span> Settings
-                </div>
-            </div>
+            <div class="nav-footer"><div class="nav-item"><span class="icon">⚙️</span> Settings</div></div>
         </nav>
-        <!-- MAIN CONTENT -->
+
         <main class="main-content">
-            <!-- HEADER -->
             <header class="top-bar">
-                <div class="page-title">
-                    <h1>Dashboard</h1>
-                    <p id="currentDate">Loading date...</p>
-                </div>
-                <div class="status-panel">
-                    <!-- Cluttered Toggles REMOVED -->
-                    <div class="clock" id="currentTime">--:--</div>
-                </div>
+                <div class="page-title"><h1>Dashboard</h1><p id="currentDate">Loading...</p></div>
+                <div class="status-panel"><div class="clock" id="currentTime">--:--</div></div>
             </header>
-            <!-- DASHBOARD GRID -->
+
             <div class="dashboard-grid">
-                <!-- TOP ROW: SUMMARY CARDS -->
                 <div class="card summary-card balance-card">
                     <div class="card-icon">💰</div>
-                    <div class="card-data">
-                        <span class="label">Total Balance (EUR)</span>
-                        <span class="value" id="balanceDisplay">...</span>
-                    </div>
+                    <div class="card-data"><span class="label">Total Balance (EUR)</span><span class="value" id="balanceDisplay">...</span></div>
                 </div>
                 <div class="card summary-card">
                     <div class="card-icon income-icon">⬇</div>
-                    <div class="card-data">
-                        <span class="label">Total Income</span>
-                        <span class="value" id="incomeCount">0</span>
-                    </div>
+                    <div class="card-data"><span class="label">Total Income</span><span class="value" id="incomeCount">0</span></div>
                 </div>
                 <div class="card summary-card">
                     <div class="card-icon expense-icon">⬆</div>
-                    <div class="card-data">
-                        <span class="label">Total Expenses</span>
-                        <span class="value" id="expenseCount">0</span>
-                    </div>
+                    <div class="card-data"><span class="label">Total Expenses</span><span class="value" id="expenseCount">0</span></div>
                 </div>
-                <!-- MIDDLE ROW: MAIN PANEL -->
+
                 <div class="card main-panel">
-                    <div class="panel-header">
-                        <h2>Quick Action</h2>
-                    </div>
+                    <div class="panel-header"><h2>Quick Action</h2></div>
                     <form id="transactionForm" class="quick-form">
                         <div class="form-grid">
                             <div class="toggle-group">
                                 <label><input type="radio" name="type" value="Expense" checked> Expense</label>
                                 <label><input type="radio" name="type" value="Income"> Income</label>
                             </div>
-                            <input type="number" id="amount" placeholder="Amount" step="0.01" required>
-                            <!-- Currency selection removed. Defaulting to EUR. -->
-                            <select id="category">
-                                <!-- Options populated by JS -->
-                            </select>
-                            <!-- Exchange Rate Input REMOVED (Auto-Handled) -->
+                            <input type="number" id="amount" placeholder="Amount (€)" step="0.01" required>
+                            <select id="category"></select>
                             <input type="text" id="paymentMethod" placeholder="Method (e.g. Card)">
                             <input type="text" id="notes" placeholder="Notes" class="full-width">
                             <button type="submit" id="submitBtn" class="full-width">Add Transaction</button>
@@ -93,36 +56,21 @@
                         <p id="formStatus" class="status-text"></p>
                     </form>
                 </div>
-                <!-- ANALYTICS -->
+
                 <div class="card analytics-panel">
                     <h3>Expense Breakdown</h3>
                     <div class="chart-wrapper">
-                        <div class="donut-chart" id="expenseChart">
-                            <div class="chart-center"></div>
-                        </div>
-                        <div class="chart-legend" id="chartLegend">
-                            <!-- JS populated -->
-                        </div>
+                        <div class="donut-chart" id="expenseChart"><div class="chart-center"></div></div>
+                        <div class="chart-legend" id="chartLegend"></div>
                     </div>
                 </div>
-                <!-- BOTTOM ROW: TRANSACTIONS -->
+
                 <div class="card transactions-panel full-width">
                     <h3>Recent Transactions</h3>
                     <div class="table-container">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Category</th>
-                                    <th>Original</th>
-                                    <th class="text-right">Value (EUR)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactionsList">
-                                <tr>
-                                    <td colspan="4">Loading...</td>
-                                </tr>
-                            </tbody>
+                            <thead><tr><th>Date</th><th>Category</th><th>Type</th><th class="text-right">Amount (€)</th></tr></thead>
+                            <tbody id="transactionsList"><tr><td colspan="4">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -132,6 +80,5 @@
     <script src="script.js"></script>
 </body>
 </html>
-
 
 
