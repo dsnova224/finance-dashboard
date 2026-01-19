@@ -44,6 +44,15 @@
                     <p id="currentDate">Loading date...</p>
                 </div>
                 <div class="status-panel">
+                    <div class="currency-toggle">
+                        <span class="toggle-label">View in:</span>
+                        <div class="toggle-switch-currency">
+                            <input type="radio" id="viewINR" name="viewCurrency" value="INR" checked>
+                            <label for="viewINR">INR</label>
+                            <input type="radio" id="viewEUR" name="viewCurrency" value="EUR">
+                            <label for="viewEUR">EUR</label>
+                        </div>
+                    </div>
                     <div class="clock" id="currentTime">--:--</div>
                 </div>
             </header>
@@ -56,7 +65,6 @@
                         <span class="label">Total Balance</span>
                         <span class="value" id="balanceDisplay">$0.00</span>
                     </div>
-                    <div class="trend up">↑ 2.4% vs last month</div>
                 </div>
                 <div class="card summary-card">
                     <div class="card-icon income-icon">⬇</div>
@@ -86,20 +94,19 @@
                             </div>
                             <input type="number" id="amount" placeholder="Amount" step="0.01" required>
                             <select id="currency">
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="INR">INR</option>
+                                <option value="INR">INR (₹)</option>
+                                <option value="EUR">EUR (€)</option>
                             </select>
                             <select id="category">
-                                <option value="Food">Food</option>
-                                <option value="Rent">Rent</option>
-                                <option value="Transport">Transport</option>
-                                <option value="Shopping">Shopping</option>
-                                <option value="Utilities">Utilities</option>
-                                <option value="Health">Health</option>
-                                <option value="Entertainment">Entertainment</option>
-                                <option value="Salary">Salary</option>
+                                <!-- Options populated by JS -->
                             </select>
+                            <!-- Exchange Rate Input (Hidden by default) -->
+                            <div class="rate-input-group" id="rateInputGroup" style="display: none;">
+                                <label for="exchangeRate"
+                                    style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Exchange
+                                    Rate (1 EUR = ? INR)</label>
+                                <input type="number" id="exchangeRate" placeholder="Rate" step="0.01">
+                            </div>
                             <input type="text" id="paymentMethod" placeholder="Method (e.g. Card)">
                             <input type="text" id="notes" placeholder="Notes" class="full-width">
                             <button type="submit" id="submitBtn" class="full-width">Add Transaction</button>
@@ -128,7 +135,7 @@
                                 <tr>
                                     <th>Date</th>
                                     <th>Category</th>
-                                    <th>Method</th>
+                                    <th>Rate</th>
                                     <th class="text-right">Amount</th>
                                 </tr>
                             </thead>
