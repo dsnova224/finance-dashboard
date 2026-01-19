@@ -15,8 +15,8 @@ const currencySelect = document.getElementById('currency');
 const rateInputGroup = document.getElementById('rateInputGroup');
 const exchangeRateInput = document.getElementById('exchangeRate');
 // State
-let globalLiveRate = 92.0; // Default fallback
-let currentData = null; // Store fetched data so we can re-render without refetching
+let globalLiveRate = 105.86; // Default from user prompt
+let currentData = null;
 // Category Colors
 const CATEGORY_COLORS = {
     'Food': '#38bdf8', 'Rent': '#818cf8', 'Transport': '#2dd4bf',
@@ -29,6 +29,20 @@ const CATEGORY_COLORS = {
 };
 const INCOME_CATEGORIES = ["Salary", "Freelance", "Business", "Investments", "Gifts / Bonus", "Refunds", "Other Income"];
 const EXPENSE_CATEGORIES = ["Food", "Rent", "Transport", "Utilities", "Shopping", "Health", "Entertainment", "Education", "Savings", "Other Expense"];
+// Fallback Mock Data (User Scenario)
+const MOCK_DATA = {
+    // 2000 EUR * 105.86 = 211,720 INR
+    // 200 INR * 1.0 = 200 INR
+    // Balance = 211,520 INR
+    balance: 211520,
+    incomeCount: 1,
+    expenseCount: 1,
+    currentRate: 105.86,
+    transactions: [
+        { date: "2023-11-15", type: "Income", category: "Salary", amount: 2000, currency: "EUR", paymentMethod: "Bank", exchangeRate: 105.86 },
+        { date: "2023-11-16", type: "Expense", category: "Food", amount: 200, currency: "INR", paymentMethod: "Cash", exchangeRate: 1.0 }
+    ]
+};
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
@@ -52,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewInputs = document.querySelectorAll('input[name="viewCurrency"]');
     viewInputs.forEach(input => {
         input.addEventListener('change', () => {
+            // Re-render with current global data
             if (currentData) renderData(currentData);
         });
     });
@@ -75,7 +90,10 @@ function updateDateTime() {
 // FETCH DATA
 async function fetchData() {
     if (API_URL === "YOUR_GAS_WEB_APP_URL") {
-        console.warn("Mock Data"); return;
+        console.log("Using Mock Data");
+        currentData = MOCK_DATA;
+        renderData(currentData);
+        return;
     }
     try {
         submitBtn.textContent = "Syncing...";
@@ -115,14 +133,16 @@ function renderData(data) {
     let currencySymbol = '₹';
     if (!isViewINR) {
         // Convert TO EUR
-        // Estimate: TotalINR / CurrentRate
-        displayBalance = data.balance / globalLiveRate;
+        // User Logic: 211524 (INR Balance) / 105.86 (Current Rate) = 1998.11 EUR
+        // Note: globalLiveRate MUST be non-zero
+        const rate = (globalLiveRate > 0) ? globalLiveRate : 1.0;
+        displayBalance = data.balance / rate;
         currencySymbol = '€';
     }
     balanceDisplay.textContent = formatMoney(displayBalance, currencySymbol);
     incomeCountEl.textContent = data.incomeCount;
     expenseCountEl.textContent = data.expenseCount;
-    // 3. Transactions Table & Chart totals
+    // 3. Transactions Table
     transactionsList.innerHTML = '';
     let categoryTotals = {};
     let totalExpenseForChart = 0;
@@ -134,21 +154,8 @@ function renderData(data) {
         const colorClass = isIncome ? 'var(--success)' : 'var(--text-white)';
         const sign = isIncome ? '+' : '-';
         const catColor = CATEGORY_COLORS[tx.category] || '#94a3b8';
-        // CONVERSION LOGIC FOR ROW
-        // We know tx.amount is the original amount. tx.currency is original.
-        // But backend `getData` summary logic was already done in INR.
-        // Wait, `transactions` array from backend has generic "amount" and "currency".
-        // Let's do client-side conversion for the list display.
         let displayAmount = parseFloat(tx.amount);
         let rowSymbol = (tx.currency === 'USD') ? '$' : (tx.currency === 'EUR' ? '€' : '₹');
-        // Logic: specific requirements said "View in EUR".
-        // If we represent the list, we usually show Original Currency. 
-        // BUT if the user toggles "View in EUR", should we convert everything in the list?
-        // Usually, transaction lists show the *actual* paid amount.
-        // Let's keep the list showing Original Currency for accuracy, 
-        // but the Summary Cards above (Balance) obey the toggle.
-        // HOWEVER, if the user specifically requested "dynamically convert... using stored rates" implies visual consistency.
-        // Let's stick to: Table shows ORIGINAL. Dashboard Totals show CONVERTED.
         tr.innerHTML = `
             <td>${dateStr}</td>
             <td style="color:${catColor}">● ${tx.category}</td>
@@ -156,15 +163,19 @@ function renderData(data) {
             <td style="text-align:right; color:${colorClass}; font-weight:600;">${sign}${formatMoney(displayAmount, rowSymbol)}</td>
         `;
         transactionsList.appendChild(tr);
-        // Chart Logic (needs to be uniform currency)
-        // Let's use the Base INR totals for simplicity, or convert if View is EUR.
-        // Backend gave us `amount` in original currency. We need to normalize.
-        // For accurate chart: Amount * ExchangeRate = INR Value.
+        // Chart Logic: Normalize to currently viewed currency
+        // Backend Data is generic. We need INR Value first.
         let amountInINR = parseFloat(tx.amount);
-        if (tx.currency === 'EUR') amountInINR = amountInINR * (tx.exchangeRate || globalLiveRate);
+        if (tx.currency === 'EUR') {
+            // INR Value = EUR Amount * Stored Rate
+            amountInINR = amountInINR * (tx.exchangeRate || globalLiveRate);
+        }
+        // If View is EUR, convert that INR total to EUR using LIVE rate
+        let chartVal = amountInINR;
+        if (!isViewINR) {
+            chartVal = chartVal / ((globalLiveRate > 0) ? globalLiveRate : 1.0);
+        }
         if (!isIncome) {
-            let chartVal = amountInINR;
-            if (!isViewINR) chartVal = chartVal / globalLiveRate; // Convert to EUR for chart
             const cat = tx.category || 'Other';
             categoryTotals[cat] = (categoryTotals[cat] || 0) + chartVal;
             totalExpenseForChart += chartVal;
@@ -261,8 +272,6 @@ form.addEventListener('submit', async (e) => {
 function formatMoney(amount, symbol) {
     return symbol + ' ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
-
 
 
 
