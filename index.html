@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Finance Dashboard</title>
+    <title>Finance Dashboard (EUR)</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -25,9 +25,6 @@
                 <div class="nav-item">
                     <span class="icon">📂</span> Categories
                 </div>
-                <div class="nav-item">
-                    <span class="icon">📅</span> Summary
-                </div>
             </div>
             <div class="nav-footer">
                 <div class="nav-item">
@@ -44,15 +41,7 @@
                     <p id="currentDate">Loading date...</p>
                 </div>
                 <div class="status-panel">
-                    <div class="currency-toggle">
-                        <span class="toggle-label">View in:</span>
-                        <div class="toggle-switch-currency">
-                            <input type="radio" id="viewINR" name="viewCurrency" value="INR" checked>
-                            <label for="viewINR">INR</label>
-                            <input type="radio" id="viewEUR" name="viewCurrency" value="EUR">
-                            <label for="viewEUR">EUR</label>
-                        </div>
-                    </div>
+                    <!-- Cluttered Toggles REMOVED -->
                     <div class="clock" id="currentTime">--:--</div>
                 </div>
             </header>
@@ -62,7 +51,7 @@
                 <div class="card summary-card balance-card">
                     <div class="card-icon">💰</div>
                     <div class="card-data">
-                        <span class="label">Total Balance</span>
+                        <span class="label">Total Balance (EUR)</span>
                         <span class="value" id="balanceDisplay">...</span>
                     </div>
                 </div>
@@ -80,8 +69,7 @@
                         <span class="value" id="expenseCount">0</span>
                     </div>
                 </div>
-                <!-- MIDDLE ROW: MAIN PANEL & ANALYTICS -->
-                <!-- Main "Thinking Space" Panel -->
+                <!-- MIDDLE ROW: MAIN PANEL -->
                 <div class="card main-panel">
                     <div class="panel-header">
                         <h2>Quick Action</h2>
@@ -93,20 +81,15 @@
                                 <label><input type="radio" name="type" value="Income"> Income</label>
                             </div>
                             <input type="number" id="amount" placeholder="Amount" step="0.01" required>
+                            <!-- Allows INR Entry (Backend auto-converts to EUR total) -->
                             <select id="currency">
-                                <option value="INR">INR (₹)</option>
                                 <option value="EUR">EUR (€)</option>
+                                <option value="INR">INR (₹)</option>
                             </select>
                             <select id="category">
                                 <!-- Options populated by JS -->
                             </select>
-                            <!-- Exchange Rate Input (Hidden by default) -->
-                            <div class="rate-input-group" id="rateInputGroup" style="display: none;">
-                                <label for="exchangeRate"
-                                    style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Exchange
-                                    Rate (1 EUR = ? INR)</label>
-                                <input type="number" id="exchangeRate" placeholder="Rate" step="0.01">
-                            </div>
+                            <!-- Exchange Rate Input REMOVED (Auto-Handled) -->
                             <input type="text" id="paymentMethod" placeholder="Method (e.g. Card)">
                             <input type="text" id="notes" placeholder="Notes" class="full-width">
                             <button type="submit" id="submitBtn" class="full-width">Add Transaction</button>
@@ -114,7 +97,7 @@
                         <p id="formStatus" class="status-text"></p>
                     </form>
                 </div>
-                <!-- Analytics Chart ("Ocean Window") -->
+                <!-- ANALYTICS -->
                 <div class="card analytics-panel">
                     <h3>Expense Breakdown</h3>
                     <div class="chart-wrapper">
@@ -135,8 +118,8 @@
                                 <tr>
                                     <th>Date</th>
                                     <th>Category</th>
-                                    <th>Rate</th>
-                                    <th class="text-right">Amount</th>
+                                    <th>Original</th>
+                                    <th class="text-right">Value (EUR)</th>
                                 </tr>
                             </thead>
                             <tbody id="transactionsList">
@@ -153,7 +136,5 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
 
 
