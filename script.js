@@ -2,10 +2,14 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxTu9cyLRFufc9Wzf60YNZWFAcwEFAcd0_WrhvHMqe5JWlpQWhxtoAwogL3wu3LEII/exec";
 const API_TOKEN = "omom@123OM";
 
+// Currency State
+let selectedCurrency = 'EUR';
+const CURRENCY_SYMBOLS = { EUR: '€', INR: '₹' };
+
 // DOM Elements
 const balanceDisplay = document.getElementById('balanceDisplay');
-const incomeCountEl = document.getElementById('incomeCount');
-const expenseCountEl = document.getElementById('expenseCount');
+const incomeDisplay = document.getElementById('incomeDisplay');
+const expenseDisplay = document.getElementById('expenseDisplay');
 const transactionsList = document.getElementById('transactionsList');
 const form = document.getElementById('transactionForm');
 const formStatus = document.getElementById('formStatus');
@@ -32,14 +36,56 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000);
 
+    // Transaction type toggle
     const typeInputs = document.querySelectorAll('input[name="type"]');
     typeInputs.forEach(input => {
         input.addEventListener('change', (e) => updateCategoryOptions(e.target.value));
     });
     updateCategoryOptions('Expense');
 
+    // Currency toggle buttons
+    const currencyBtns = document.querySelectorAll('.currency-btn');
+    currencyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const currency = btn.dataset.currency;
+            if (currency !== selectedCurrency) {
+                switchCurrency(currency);
+            }
+        });
+    });
+
     fetchData();
 });
+
+// CURRENCY SWITCHING
+function switchCurrency(currency) {
+    selectedCurrency = currency;
+
+    // Update active button state
+    document.querySelectorAll('.currency-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.currency === currency);
+    });
+
+    // Update all currency labels
+    updateCurrencyLabels();
+
+    // Re-fetch data for new currency
+    fetchData();
+}
+
+function updateCurrencyLabels() {
+    const sym = CURRENCY_SYMBOLS[selectedCurrency];
+
+    // Update all .currency-label spans
+    document.querySelectorAll('.currency-label').forEach(el => {
+        el.textContent = selectedCurrency;
+    });
+
+    // Update all .currency-symbol spans
+    document.querySelectorAll('.currency-symbol').forEach(el => {
+        el.textContent = sym;
+    });
+}
 
 function updateCategoryOptions(type) {
     const categorySelect = document.getElementById('category');
@@ -65,7 +111,7 @@ async function fetchData() {
     try {
         const response = await fetch(API_URL, {
             method: "POST",
-            body: JSON.stringify({ action: "getData", token: API_TOKEN, targetCurrency: "EUR" })
+            body: JSON.stringify({ action: "getData", token: API_TOKEN, targetCurrency: selectedCurrency })
         });
         const result = await response.json();
         if (result.status === "success") {
@@ -81,11 +127,14 @@ async function fetchData() {
 }
 
 function renderDashboard(data) {
-    const sym = '€';
-    balanceDisplay.textContent = formatMoney(data.balance, sym);
-    incomeCountEl.textContent = data.incomeCount;
-    expenseCountEl.textContent = data.expenseCount;
+    const sym = CURRENCY_SYMBOLS[selectedCurrency];
 
+    // Update KPI cards
+    balanceDisplay.textContent = formatMoney(data.balance, sym);
+    incomeDisplay.textContent = formatMoney(data.totalIncome || 0, sym);
+    expenseDisplay.textContent = formatMoney(data.totalExpense || 0, sym);
+
+    // Render transactions table
     transactionsList.innerHTML = '';
     let categoryTotals = {};
     let totalExpenseForChart = 0;
@@ -125,6 +174,7 @@ function renderDashboard(data) {
 function renderChart(totals, totalAmount) {
     if (totalAmount === 0 || isNaN(totalAmount)) {
         chartEl.style.background = '#1e293b';
+        legendEl.innerHTML = '<div style="color:#aaa; text-align:center;">No expense data</div>';
         return;
     }
 
@@ -133,6 +183,7 @@ function renderChart(totals, totalAmount) {
     legendEl.innerHTML = '';
 
     const sortedCats = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const sym = CURRENCY_SYMBOLS[selectedCurrency];
 
     sortedCats.forEach(([cat, amount]) => {
         const percent = amount / totalAmount;
@@ -162,13 +213,14 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const type = document.querySelector('input[name="type"]:checked').value;
+    const transactionCurrency = document.getElementById('transactionCurrency').value;
 
     const formData = {
         action: "addTransaction",
         token: API_TOKEN,
         type: type,
         amount: document.getElementById('amount').value,
-        currency: "EUR", // HARDCODED EURO
+        currency: transactionCurrency,
         category: document.getElementById('category').value,
         paymentMethod: document.getElementById('paymentMethod').value,
         notes: document.getElementById('notes').value
@@ -208,6 +260,7 @@ form.addEventListener('submit', async (e) => {
 function formatMoney(amount, symbol) {
     return symbol + ' ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
 
 
 
