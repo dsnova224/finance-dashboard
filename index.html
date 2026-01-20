@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Dashboard (EUR)</title>
+    <title>Finance Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -36,6 +36,11 @@
                     <p id="currentDate">Loading date...</p>
                 </div>
                 <div class="status-panel">
+                    <!-- CURRENCY TOGGLE -->
+                    <div class="currency-toggle">
+                        <button class="currency-btn active" data-currency="EUR">€ EUR</button>
+                        <button class="currency-btn" data-currency="INR">₹ INR</button>
+                    </div>
                     <div class="clock" id="currentTime">--:--</div>
                 </div>
             </header>
@@ -46,7 +51,7 @@
                 <div class="card summary-card balance-card">
                     <div class="card-icon">💰</div>
                     <div class="card-data">
-                        <span class="label">Total Balance (EUR)</span>
+                        <span class="label">Total Balance (<span class="currency-label">EUR</span>)</span>
                         <span class="value" id="balanceDisplay">...</span>
                     </div>
                 </div>
@@ -54,16 +59,16 @@
                 <div class="card summary-card">
                     <div class="card-icon income-icon">⬇</div>
                     <div class="card-data">
-                        <span class="label">Total Income</span>
-                        <span class="value" id="incomeCount">0</span>
+                        <span class="label">Total Income (<span class="currency-label">EUR</span>)</span>
+                        <span class="value" id="incomeDisplay">...</span>
                     </div>
                 </div>
 
                 <div class="card summary-card">
                     <div class="card-icon expense-icon">⬆</div>
                     <div class="card-data">
-                        <span class="label">Total Expenses</span>
-                        <span class="value" id="expenseCount">0</span>
+                        <span class="label">Total Expenses (<span class="currency-label">EUR</span>)</span>
+                        <span class="value" id="expenseDisplay">...</span>
                     </div>
                 </div>
 
@@ -78,7 +83,13 @@
                                 <label><input type="radio" name="type" value="Expense" checked> Expense</label>
                                 <label><input type="radio" name="type" value="Income"> Income</label>
                             </div>
-                            <input type="number" id="amount" placeholder="Amount (€)" step="0.01" required>
+                            <div class="amount-row">
+                                <select id="transactionCurrency" class="currency-select">
+                                    <option value="EUR">€ EUR</option>
+                                    <option value="INR">₹ INR</option>
+                                </select>
+                                <input type="number" id="amount" placeholder="Amount" step="0.01" required>
+                            </div>
                             <select id="category">
                                 <!-- Populated by JS -->
                             </select>
@@ -92,7 +103,7 @@
 
                 <!-- ANALYTICS CHART -->
                 <div class="card analytics-panel">
-                    <h3>Expense Breakdown</h3>
+                    <h3>Expense Breakdown (<span class="currency-label">EUR</span>)</h3>
                     <div class="chart-wrapper">
                         <div class="donut-chart" id="expenseChart">
                             <div class="chart-center"></div>
@@ -111,7 +122,7 @@
                                     <th>Date</th>
                                     <th>Category</th>
                                     <th>Type</th>
-                                    <th class="text-right">Amount (€)</th>
+                                    <th class="text-right">Amount (<span class="currency-symbol">€</span>)</th>
                                 </tr>
                             </thead>
                             <tbody id="transactionsList">
@@ -129,6 +140,7 @@
 </body>
 
 </html>
+
 
 
 
