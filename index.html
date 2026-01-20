@@ -23,6 +23,12 @@
                 <div class="nav-item"><span class="icon">📂</span> Categories</div>
             </div>
             <div class="nav-footer">
+                <!-- UI Theme Switcher -->
+                <div class="theme-switcher">
+                    <button onclick="changeAppTheme('ocean')" title="Ocean Mode">🌊</button>
+                    <button onclick="changeAppTheme('tokyo')" title="Tokyo Night">🌆</button>
+                    <button onclick="changeAppTheme('night')" title="Night Mode">🌙</button>
+                </div>
                 <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
             </div>
         </nav>
@@ -137,9 +143,22 @@
         </main>
     </div>
     <script src="script.js"></script>
+    <script>
+        /* UI ONLY LOGIC - THEME SWITCHER */
+        function changeAppTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('dashboard-theme', theme);
+        }
+        // Init theme on load
+        (function () {
+            const saved = localStorage.getItem('dashboard-theme') || 'ocean';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
 </body>
 
 </html>
+
 
 
 
