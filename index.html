@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinPro | Modern Finance Dashboard</title>
+    <title>Finance Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -15,21 +15,15 @@
         <nav class="sidebar">
             <div class="brand">
                 <div class="brand-logo"></div>
-                <div class="brand-text">
-                    <span class="brand-name">FinPro</span>
-                    <span class="brand-tagline">Smart Finance</span>
-                </div>
+                <span>FinPro</span>
             </div>
             <div class="nav-menu">
-                <div class="nav-section">Main Menu</div>
                 <div class="nav-item active"><span class="icon">📊</span> Dashboard</div>
                 <div class="nav-item"><span class="icon">💳</span> Transactions</div>
                 <div class="nav-item"><span class="icon">📂</span> Categories</div>
-                <div class="nav-item"><span class="icon">📈</span> Reports</div>
             </div>
             <div class="nav-footer">
                 <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
-                <div class="nav-item"><span class="icon">👤</span> Profile</div>
             </div>
         </nav>
 
@@ -38,154 +32,102 @@
             <!-- HEADER -->
             <header class="top-bar">
                 <div class="page-title">
-                    <h1>Overview</h1>
+                    <h1>Dashboard</h1>
                     <p id="currentDate">Loading date...</p>
                 </div>
-                <div class="header-actions">
+                <div class="status-panel">
                     <!-- CURRENCY TOGGLE -->
                     <div class="currency-toggle">
                         <button class="currency-btn active" data-currency="EUR">€ EUR</button>
                         <button class="currency-btn" data-currency="INR">₹ INR</button>
                     </div>
-                    <div class="clock-box" id="currentTime">--:--</div>
+                    <div class="clock" id="currentTime">--:--</div>
                 </div>
             </header>
 
             <!-- DASHBOARD GRID -->
             <div class="dashboard-grid">
-                <!-- TOP CARDS -->
-                <div class="card premium-card balance-card">
-                    <div class="card-glow"></div>
-                    <div class="card-header-row">
-                        <span class="label">Total Balance</span>
-                        <span class="card-icon-pill">💰</span>
-                    </div>
-                    <div class="card-main">
-                        <span class="currency-sym currency-symbol">€</span>
-                        <span class="value" id="balanceDisplay">0.00</span>
-                    </div>
-                    <div class="card-footer">
-                        <span class="badge"><span class="currency-label">EUR</span> Account</span>
+                <!-- SUMMARY CARDS -->
+                <div class="card summary-card balance-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-data">
+                        <span class="label">Total Balance (<span class="currency-label">EUR</span>)</span>
+                        <span class="value" id="balanceDisplay">...</span>
                     </div>
                 </div>
 
-                <div class="card stat-card income-stats">
-                    <div class="card-header-row">
-                        <span class="label">Monthly Income</span>
-                        <span class="card-icon-pill income">⬇</span>
-                    </div>
-                    <div class="card-main">
-                        <span class="currency-sym currency-symbol">€</span>
-                        <span class="value" id="incomeDisplay">0.00</span>
-                    </div>
-                    <div class="card-footer">
-                        <span class="trend up">Total received this month</span>
+                <div class="card summary-card">
+                    <div class="card-icon income-icon">⬇</div>
+                    <div class="card-data">
+                        <span class="label">Total Income (<span class="currency-label">EUR</span>)</span>
+                        <span class="value" id="incomeDisplay">...</span>
                     </div>
                 </div>
 
-                <div class="card stat-card expense-stats">
-                    <div class="card-header-row">
-                        <span class="label">Monthly Expenses</span>
-                        <span class="card-icon-pill expense">⬆</span>
-                    </div>
-                    <div class="card-main">
-                        <span class="currency-sym currency-symbol">€</span>
-                        <span class="value" id="expenseDisplay">0.00</span>
-                    </div>
-                    <div class="card-footer">
-                        <span class="trend down">Total spent this month</span>
+                <div class="card summary-card">
+                    <div class="card-icon expense-icon">⬆</div>
+                    <div class="card-data">
+                        <span class="label">Total Expenses (<span class="currency-label">EUR</span>)</span>
+                        <span class="value" id="expenseDisplay">...</span>
                     </div>
                 </div>
 
                 <!-- QUICK ACTION FORM -->
-                <div class="card side-panel form-panel">
+                <div class="card main-panel">
                     <div class="panel-header">
-                        <h2>New Transaction</h2>
-                        <p>Keep your records up-to-date</p>
+                        <h2>Quick Action</h2>
                     </div>
-                    <form id="transactionForm" class="modern-form">
-                        <div class="type-selector">
-                            <input type="radio" name="type" value="Expense" id="type-expense" checked>
-                            <label for="type-expense">Expense</label>
-                            <input type="radio" name="type" value="Income" id="type-income">
-                            <label for="type-income">Income</label>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Amount & Currency</label>
-                            <div class="amount-input-row">
-                                <select id="transactionCurrency" class="modern-select currency-sel">
+                    <form id="transactionForm" class="quick-form">
+                        <div class="form-grid">
+                            <div class="toggle-group">
+                                <label><input type="radio" name="type" value="Expense" checked> Expense</label>
+                                <label><input type="radio" name="type" value="Income"> Income</label>
+                            </div>
+                            <div class="amount-row">
+                                <select id="transactionCurrency" class="currency-select">
                                     <option value="EUR">€ EUR</option>
                                     <option value="INR">₹ INR</option>
                                 </select>
-                                <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+                                <input type="number" id="amount" placeholder="Amount" step="0.01" required>
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Category</label>
-                            <select id="category" class="modern-select">
+                            <select id="category">
                                 <!-- Populated by JS -->
                             </select>
+                            <input type="text" id="paymentMethod" placeholder="Method (e.g. Card)">
+                            <input type="text" id="notes" placeholder="Notes" class="full-width">
+                            <button type="submit" id="submitBtn" class="full-width">Add Transaction</button>
                         </div>
-
-                        <div class="form-group">
-                            <label>Payment Method</label>
-                            <input type="text" id="paymentMethod" placeholder="Card, Cash, etc.">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label>Notes (Optional)</label>
-                            <input type="text" id="notes" placeholder="What was this for?">
-                        </div>
-
-                        <button type="submit" id="submitBtn" class="primary-btn">
-                            <span class="btn-text">Add Transaction</span>
-                            <span class="btn-loader"></span>
-                        </button>
-                        <p id="formStatus" class="status-msg"></p>
+                        <p id="formStatus" class="status-text"></p>
                     </form>
                 </div>
 
                 <!-- ANALYTICS CHART -->
-                <div class="card main-panel analytics-panel">
-                    <div class="panel-header">
-                        <h2>Spending Analysis</h2>
-                        <span class="sub-label"><span class="currency-label">EUR</span> Breakdown</span>
-                    </div>
-                    <div class="chart-content">
-                        <div class="donut-wrapper">
-                            <div class="donut-chart" id="expenseChart">
-                                <div class="chart-center">
-                                    <span class="center-label">Total</span>
-                                    <span class="center-value" id="chartTotalValue">0</span>
-                                </div>
-                            </div>
+                <div class="card analytics-panel">
+                    <h3>Expense Breakdown (<span class="currency-label">EUR</span>)</h3>
+                    <div class="chart-wrapper">
+                        <div class="donut-chart" id="expenseChart">
+                            <div class="chart-center"></div>
                         </div>
                         <div class="chart-legend" id="chartLegend"></div>
                     </div>
                 </div>
 
                 <!-- TRANSACTIONS TABLE -->
-                <div class="card main-panel transactions-panel full-width">
-                    <div class="panel-header">
-                        <h2>Recent Activity</h2>
-                        <button class="view-all-btn">View All</button>
-                    </div>
-                    <div class="table-frame">
-                        <table class="modern-table">
+                <div class="card transactions-panel full-width">
+                    <h3>Recent Transactions</h3>
+                    <div class="table-container">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Date</th>
                                     <th>Category</th>
                                     <th>Type</th>
-                                    <th>Method</th>
                                     <th class="text-right">Amount (<span class="currency-symbol">€</span>)</th>
                                 </tr>
                             </thead>
                             <tbody id="transactionsList">
                                 <tr>
-                                    <td colspan="5" class="empty-state">Loading your activity...</td>
+                                    <td colspan="4">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -198,6 +140,8 @@
 </body>
 
 </html>
+
+
 
 
 
