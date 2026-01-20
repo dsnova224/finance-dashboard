@@ -1,5 +1,5 @@
 // CONFIGURATION - UPDATE THIS URL AFTER DEPLOYING CODE.GS
-const API_URL = "https://script.google.com/macros/s/AKfycbxTu9cyLRFufc9Wzf60YNZWFAcwEFAcd0_WrhvHMqe5JWlpQWhxtoAwogL3wu3LEII/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwvmNVA_PD18Y9hYb3-MNEgnngARAU0_ho2f7vD3jvDjM-6NmFSjw5tXKpAv1KBWUTv/exec";
 const API_TOKEN = "omom@123OM";
 
 // Currency State
@@ -16,27 +16,16 @@ const formStatus = document.getElementById('formStatus');
 const submitBtn = document.getElementById('submitBtn');
 const chartEl = document.getElementById('expenseChart');
 const legendEl = document.getElementById('chartLegend');
-const chartTotalValueEl = document.getElementById('chartTotalValue');
 
-// Category Colors - Professional Palette
+// Category Colors
 const CATEGORY_COLORS = {
-    'Food': '#60a5fa',         // Blue 400
-    'Rent': '#818cf8',         // Indigo 400
-    'Transport': '#34d399',    // Emerald 400
-    'Utilities': '#fbbf24',    // Amber 400
-    'Shopping': '#f472b6',     // Pink 400
-    'Health': '#4ade80',       // Green 400
-    'Entertainment': '#a78bfa',// Violet 400
-    'Education': '#5eead4',    // Teal 400
-    'Savings': '#2dd4bf',     // Teal 400
-    'Other Expense': '#94a3b8',// Slate 400
-    'Salary': '#10b981',       // Emerald 500
-    'Freelance': '#f59e0b',    // Amber 500
-    'Business': '#6366f1',     // Indigo 500
-    'Investments': '#14b8a6',  // Teal 500
-    'Gifts / Bonus': '#ec4899',// Pink 500
-    'Refunds': '#3b82f6',      // Blue 500
-    'Other Income': '#64748b'  // Slate 500
+    'Food': '#38bdf8', 'Rent': '#818cf8', 'Transport': '#2dd4bf',
+    'Utilities': '#fbbf24', 'Shopping': '#f472b6', 'Health': '#34d399',
+    'Entertainment': '#a78bfa', 'Education': '#60a5fa', 'Savings': '#22c55e',
+    'Other Expense': '#94a3b8',
+    'Salary': '#22c55e', 'Freelance': '#fbbf24', 'Business': '#818cf8',
+    'Investments': '#34d399', 'Gifts / Bonus': '#f472b6', 'Refunds': '#38bdf8',
+    'Other Income': '#94a3b8'
 };
 
 const INCOME_CATEGORIES = ["Salary", "Freelance", "Business", "Investments", "Gifts / Bonus", "Refunds", "Other Income"];
@@ -112,19 +101,13 @@ function updateCategoryOptions(type) {
 
 function updateDateTime() {
     const now = new Date();
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-
-    document.getElementById('currentTime').textContent = now.toLocaleTimeString([], timeOptions);
-    document.getElementById('currentDate').textContent = now.toLocaleDateString([], dateOptions);
+    document.getElementById('currentTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('currentDate').textContent = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 // FETCH DATA
 async function fetchData() {
-    const btnText = submitBtn.querySelector('.btn-text');
-    const originalText = btnText.textContent;
-    btnText.textContent = "Updating...";
-
+    submitBtn.textContent = "Loading...";
     try {
         const response = await fetch(API_URL, {
             method: "POST",
@@ -139,17 +122,17 @@ async function fetchData() {
     } catch (error) {
         console.error("Fetch Error:", error);
     } finally {
-        btnText.textContent = originalText;
+        submitBtn.textContent = "Add Transaction";
     }
 }
 
 function renderDashboard(data) {
     const sym = CURRENCY_SYMBOLS[selectedCurrency];
 
-    // Update KPI cards with animation
-    animateValue(balanceDisplay, parseFloat(balanceDisplay.innerText) || 0, data.balance, 500, sym);
-    animateValue(incomeDisplay, parseFloat(incomeDisplay.innerText) || 0, data.totalIncome || 0, 500, sym);
-    animateValue(expenseDisplay, parseFloat(expenseDisplay.innerText) || 0, data.totalExpense || 0, 500, sym);
+    // Update KPI cards
+    balanceDisplay.textContent = formatMoney(data.balance, sym);
+    incomeDisplay.textContent = formatMoney(data.totalIncome || 0, sym);
+    expenseDisplay.textContent = formatMoney(data.totalExpense || 0, sym);
 
     // Render transactions table
     transactionsList.innerHTML = '';
@@ -157,35 +140,23 @@ function renderDashboard(data) {
     let totalExpenseForChart = 0;
 
     if (!data.transactions || data.transactions.length === 0) {
-        transactionsList.innerHTML = '<tr><td colspan="5" class="empty-state">No activity found in this currency</td></tr>';
+        transactionsList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#aaa;">No transactions found</td></tr>';
     } else {
-        data.transactions.forEach((tx, index) => {
+        data.transactions.forEach(tx => {
             const tr = document.createElement('tr');
-            tr.style.animation = `fadeInUp 0.3s ease-out forwards ${index * 0.05}s`;
-            tr.style.opacity = '0';
-
             let dateStr = "";
-            try {
-                const d = new Date(tx.date);
-                dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            } catch (e) { }
+            try { dateStr = new Date(tx.date).toLocaleDateString([], { month: 'short', day: 'numeric' }); } catch (e) { }
 
             const isIncome = tx.type === 'Income';
-            const amountColor = isIncome ? 'var(--success)' : 'var(--text-main)';
+            const colorClass = isIncome ? 'var(--success)' : 'var(--text-white)';
             const sign = isIncome ? '+' : '-';
             const catColor = CATEGORY_COLORS[tx.category] || '#94a3b8';
 
             tr.innerHTML = `
                 <td>${dateStr}</td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="width:8px; height:8px; border-radius:50%; background:${catColor}"></span>
-                        ${tx.category}
-                    </div>
-                </td>
-                <td style="color:var(--text-muted); font-size:0.8rem;">${tx.type}</td>
-                <td style="color:var(--text-muted); font-size:0.8rem;">${tx.paymentMethod || '—'}</td>
-                <td class="text-right" style="color:${amountColor}; font-weight:700;">${sign}${formatMoney(tx.amount, '')}</td>
+                <td style="color:${catColor}">● ${tx.category}</td>
+                <td style="color:var(--text-muted)">${tx.type}</td>
+                <td style="text-align:right; color:${colorClass}; font-weight:600;">${sign}${formatMoney(tx.amount, sym)}</td>
             `;
             transactionsList.appendChild(tr);
 
@@ -201,12 +172,9 @@ function renderDashboard(data) {
 }
 
 function renderChart(totals, totalAmount) {
-    const sym = CURRENCY_SYMBOLS[selectedCurrency];
-    chartTotalValueEl.textContent = formatMoney(totalAmount, sym);
-
     if (totalAmount === 0 || isNaN(totalAmount)) {
-        chartEl.style.background = '#f1f5f9';
-        legendEl.innerHTML = '<div style="grid-column: span 2; color:var(--text-muted); text-align:center; padding:1rem;">No spending recorded</div>';
+        chartEl.style.background = '#1e293b';
+        legendEl.innerHTML = '<div style="color:#aaa; text-align:center;">No expense data</div>';
         return;
     }
 
@@ -215,6 +183,7 @@ function renderChart(totals, totalAmount) {
     legendEl.innerHTML = '';
 
     const sortedCats = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const sym = CURRENCY_SYMBOLS[selectedCurrency];
 
     sortedCats.forEach(([cat, amount]) => {
         const percent = amount / totalAmount;
@@ -222,7 +191,7 @@ function renderChart(totals, totalAmount) {
         const color = CATEGORY_COLORS[cat] || '#94a3b8';
 
         const start = currentDeg;
-        const end = currentDeg + (deg > 1 ? deg - 0.5 : deg); // Add small gap
+        const end = currentDeg + deg;
         gradientString.push(`${color} ${start}deg ${end}deg`);
         currentDeg += deg;
 
@@ -231,7 +200,7 @@ function renderChart(totals, totalAmount) {
         legendItem.innerHTML = `
             <span class="dot" style="background:${color}"></span>
             <span style="flex:1">${cat}</span>
-            <span style="color:var(--text-main); font-weight:600">${Math.round(percent * 100)}%</span>
+            <span style="opacity:0.7">${Math.round(percent * 100)}%</span>
         `;
         legendEl.appendChild(legendItem);
     });
@@ -258,7 +227,7 @@ form.addEventListener('submit', async (e) => {
     };
 
     try {
-        submitBtn.classList.add('loading');
+        submitBtn.textContent = "Saving...";
         submitBtn.disabled = true;
 
         const response = await fetch(API_URL, {
@@ -269,7 +238,8 @@ form.addEventListener('submit', async (e) => {
         const result = await response.json();
 
         if (result.status === "success") {
-            showStatus("Transaction Saved!", "var(--success)");
+            formStatus.textContent = "Saved!";
+            formStatus.style.color = "var(--success)";
             form.reset();
             updateCategoryOptions('Expense');
             fetchData();
@@ -278,53 +248,19 @@ form.addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error(error);
-        showStatus("Error saving transaction", "var(--danger)");
+        formStatus.textContent = "Error";
+        formStatus.style.color = "var(--danger)";
     } finally {
-        submitBtn.classList.remove('loading');
+        submitBtn.textContent = "Add Transaction";
         submitBtn.disabled = false;
+        setTimeout(() => { formStatus.textContent = ""; }, 3000);
     }
 });
 
-// UTILS
 function formatMoney(amount, symbol) {
-    const formatted = parseFloat(amount).toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-    return symbol ? `${symbol} ${formatted}` : formatted;
+    return symbol + ' ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function showStatus(msg, color) {
-    formStatus.textContent = msg;
-    formStatus.style.color = color;
-    setTimeout(() => { formStatus.textContent = ""; }, 3000);
-}
-
-function animateValue(obj, start, end, duration, sym) {
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const current = progress * (end - start) + start;
-        obj.innerHTML = formatMoney(current, '');
-        if (progress < 1) {
-            window.requestAnimationFrame(step);
-        } else {
-            obj.innerHTML = formatMoney(end, '');
-        }
-    };
-    window.requestAnimationFrame(step);
-}
-
-// Animation styles
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-`;
-document.head.appendChild(styleSheet);
 
 
 
