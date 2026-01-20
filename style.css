@@ -346,11 +346,35 @@ button[type="submit"]:hover {
 }
 
 /* ANALYTICS */
-.analytics-panel .chart-wrapper {
+.analytics-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-wrapper {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    justify-content: center;
+    gap: 3rem;
     margin-top: 1.5rem;
+    flex: 1;
+    /* Allows it to take up available height */
+}
+
+.chart-container-inner {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chart-legend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 250px;
+    overflow-y: auto;
 }
 
 .donut-chart {
