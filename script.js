@@ -1,5 +1,5 @@
 // CONFIGURATION - UPDATE THIS URL AFTER DEPLOYING CODE.GS
-const API_URL = "https://script.google.com/macros/s/AKfycbzzrA68exwxtGAWAyzEymROzhu88VTSG1_-VIcy4S2sWpeCuKOsPmhgaJRxCKGnSFMk/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwrbsLAfEgHmwearsiGYTtBdMki4AkYsQzinF84jXe39CleupnPWdgJp5BbFbiAwnPO/exec";
 const API_TOKEN = "omom@123OM";
 
 // Currency State
@@ -260,6 +260,7 @@ form.addEventListener('submit', async (e) => {
 function formatMoney(amount, symbol) {
     return symbol + ' ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
 
 
 
