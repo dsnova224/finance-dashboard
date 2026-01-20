@@ -10,11 +10,11 @@
 </head>
 
 <body>
-    <div class="app-layout">
+    <div class="app-container">
         <!-- SIDEBAR -->
         <nav class="sidebar">
-            <div class="brand">
-                <div class="brand-logo"></div>
+            <div class="logo">
+                <div class="logo-icon"></div>
                 <span>FinPro</span>
             </div>
             <div class="nav-menu">
@@ -23,6 +23,12 @@
                 <div class="nav-item"><span class="icon">📂</span> Categories</div>
             </div>
             <div class="nav-footer">
+                <!-- Theme Toggler (UI ONLY) -->
+                <div class="theme-switcher">
+                    <button onclick="changeAppTheme('ocean')" title="Ocean Mode">🌊</button>
+                    <button onclick="changeAppTheme('tokyo')" title="Tokyo Night">🌆</button>
+                    <button onclick="changeAppTheme('night')" title="Night Mode">🌙</button>
+                </div>
                 <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
             </div>
         </nav>
@@ -30,18 +36,18 @@
         <!-- MAIN CONTENT -->
         <main class="main-content">
             <!-- HEADER -->
-            <header class="top-bar">
+            <header>
                 <div class="page-title">
                     <h1>Dashboard</h1>
                     <p id="currentDate">Loading date...</p>
                 </div>
-                <div class="status-panel">
+                <div style="display:flex; align-items:center;">
                     <!-- CURRENCY TOGGLE -->
                     <div class="currency-toggle">
                         <button class="currency-btn active" data-currency="EUR">€ EUR</button>
                         <button class="currency-btn" data-currency="INR">₹ INR</button>
                     </div>
-                    <div class="clock" id="currentTime">--:--</div>
+                    <div class="header-time" id="currentTime">--:--</div>
                 </div>
             </header>
 
@@ -74,9 +80,8 @@
 
                 <!-- QUICK ACTION FORM -->
                 <div class="card main-panel">
-                    <div class="panel-header">
-                        <h2>Quick Action</h2>
-                    </div>
+                    <h3>Quick Action</h3>
+                    <br>
                     <form id="transactionForm" class="quick-form">
                         <div class="form-grid">
                             <div class="toggle-group">
@@ -94,10 +99,10 @@
                                 <!-- Populated by JS -->
                             </select>
                             <input type="text" id="paymentMethod" placeholder="Method (e.g. Card)">
-                            <input type="text" id="notes" placeholder="Notes" class="full-width">
-                            <button type="submit" id="submitBtn" class="full-width">Add Transaction</button>
+                            <input type="text" id="notes" placeholder="Notes (Optional)">
+                            <button type="submit" id="submitBtn">Add Transaction</button>
                         </div>
-                        <p id="formStatus" class="status-text"></p>
+                        <p id="formStatus" style="text-align:center; margin-top:10px;"></p>
                     </form>
                 </div>
 
@@ -113,7 +118,7 @@
                 </div>
 
                 <!-- TRANSACTIONS TABLE -->
-                <div class="card transactions-panel full-width">
+                <div class="card full-width">
                     <h3>Recent Transactions</h3>
                     <div class="table-container">
                         <table>
@@ -137,6 +142,17 @@
         </main>
     </div>
     <script src="script.js"></script>
+    <script>
+        /* THEME PERSISTENCE - UI ONLY */
+        function changeAppTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('dashboard-theme', theme);
+        }
+        (function () {
+            const saved = localStorage.getItem('dashboard-theme') || 'ocean';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
 </body>
 
 </html>
